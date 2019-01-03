@@ -3,14 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.XR;
 
 public class MenuManager : MonoBehaviour
 {
     private void Awake()
     {
+        StartCoroutine(LoadDevice("Cardboard"));
+
         sequenceManager.gameObject.SetActive(false);
         SetCurrentAircraft();
         SetCurrentSeatToggle();
+    }
+
+    IEnumerator LoadDevice(string newDevice)
+    {
+        XRSettings.LoadDeviceByName(newDevice);
+        yield return new WaitForSeconds(0.1f);
+        XRSettings.enabled = true;
     }
 
     #region Aircraft

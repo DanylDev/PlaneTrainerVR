@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,6 +15,9 @@ public class SequenceManager : MonoBehaviour
     [SerializeField] private GameObject selectors_190_GO;
 
     [SerializeField] private GameObject activeSelectorGO;
+    [SerializeField] private List<GameObject> flowsGO_s;
+    private int flowsLength;
+    private int currentFlowIndex = 0;
 
     [SerializeField] private GameObject cockpit_737_GO;
 
@@ -34,23 +38,46 @@ public class SequenceManager : MonoBehaviour
 
     private void Start()
     {
-        StartSequenceFlow();
+        GetActiveSelectorFromPlayerPrefs();
+        GetAllFlows();
+        MovePlayerToSelectedSeat();
+
+        StartFlows();
     }
 
-    private void StartSequenceFlow()
+    private void StartFlows()
     {
-        GetActiveSelectorFromPlayerPrefs();
-        MovePlayerToSelectedSeat();
-        FillSelectorsList();
+        ActivateNewFlow();
         //FillSequenceNumbersText();
+    }
+
+    private void ActivateNewFlow()
+    {
+        selectorsList.Clear();
+
+        foreach (var selector in flowsGO_s[currentFlowIndex].GetComponentsInChildren<Selector>())
+        {
+            selectorsList.Add(selector);
+        }
+
         SetFirstSelectorActive();
     }
 
     private void GetActiveSelectorFromPlayerPrefs()
     {
-        // ToDO: Change to PlayerPrefs. Temp sentences
+        // ToDO: Temporary. Change to PlayerPrefs getting.
         activeSelectorGO = selectors_737_GO;
         cockpit_737_GO.SetActive(true);
+    }
+
+    private void GetAllFlows()
+    {
+        foreach (var flowGO in GameObject.FindGameObjectsWithTag("Flow"))
+        {
+            flowsGO_s.Add(flowGO);
+        }
+
+        flowsLength = flowsGO_s.Count;
     }
 
     private void MovePlayerToSelectedSeat()
@@ -75,6 +102,8 @@ public class SequenceManager : MonoBehaviour
         {
             selectorsList.Add(selector);
         }
+
+        SetFirstSelectorActive();
     }
 
     private void FillSequenceNumbersText()
@@ -104,12 +133,23 @@ public class SequenceManager : MonoBehaviour
         Destroy(selectorsList.First().gameObject);
         selectorsList.Remove(selectorsList.First());
 
-        if (selectorsList.Count == 0)
+        if (selectorsList.Count == 0) // Next flow, if any. If not - Final
         {
-            // ToDo: Final message and backToMenu
-            Debug.Log("Final!");
-            StartCoroutine(FinalRoutine(5));
-            return;
+            Destroy(flowsGO_s[currentFlowIndex]);
+            currentFlowIndex++;
+
+            if (currentFlowIndex >= flowsLength)
+            {
+                // ToDo: Final message and backToMenu
+                Debug.Log("Final!");
+                StartCoroutine(FinalRoutine(5));
+                return;
+            }
+            else
+            {
+                ShowMessage("Flow " + currentFlowIndex + " completed. Starting Flow " + (currentFlowIndex+1) + "...", 3f);
+                ActivateNewFlow();
+            }
         }
 
         selectorsList.First().isActive = true;
@@ -129,5 +169,21 @@ public class SequenceManager : MonoBehaviour
         finalText.text = "Restart!";
         yield return new WaitForSeconds(0.5f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void ShowMessage(string message, float delay)
+    {
+        StartCoroutine(ShowMessageRoutine(message, delay));
+    }
+
+    private IEnumerator ShowMessageRoutine(string message, float delay)
+    {
+        finalText.gameObject.SetActive(true);
+        finalText.text = message;
+
+        yield return new WaitForSeconds(delay);
+
+        finalText.text = string.Empty;
+        finalText.gameObject.SetActive(false);
     }
 }

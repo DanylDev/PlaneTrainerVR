@@ -4,6 +4,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// Unused code.
+/// </summary>
 public class MenuGeneratorManager : MonoBehaviour
 {
     [SerializeField] private List<Button> allButtons = new List<Button>();

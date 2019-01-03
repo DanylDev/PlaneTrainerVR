@@ -20,3 +20,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Test Mode.unity
     guid: b28c3588a8a024248a131e6b33bbb527
+  - enabled: 0
+    path: Assets/GoogleVR/Demos/Scenes/HelloVR.unity
+    guid: bb36d2905dc634f1c9eecb35beecaca8
+  m_configObjects: {}
